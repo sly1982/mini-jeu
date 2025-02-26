@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Effet Matrix - Quiz IA</title>
+    <style>
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            background: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-y: auto;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .container {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px auto;
+            cursor: pointer;
+            display: block;
+        }
+        .feedback {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #scoreContainer {
+            display: none;
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: limegreen;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    <div class="container">
+        <h2>Quiz Intelligence Artificielle</h2>
+        
+        <div id="quiz"></div>
+        <div id="scoreContainer"></div>
+    </div>
+    <script>
+        const canvas = document.getElementById("matrix");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0F0";
+            ctx.font = fontSize + "px monospace";
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
+
+        let questions = [
+            { text: "Cette technologie permet aux machines d'apprendre à partir de données sans être explicitement programmées", options: ["Machine Learning", "IA Générative", "Vision par ordinateur"], answer: 0 },
+            { text: "Utilisé pour la reconnaissance vocale et la traduction automatique...", options: ["NLP", "Apprentissage par renforcement", "Deep Learning"], answer: 0 },
+            { text: "C’est une sous-branche du Machine Learning...", options: ["Vision par ordinateur", "Deep Learning", "Systèmes de recommandation"], answer: 1 },
+            { text: "Technologie permettant aux ordinateurs d’identifier des objets, des visages et du texte dans des images et vidéos.", options: ["Apprentissage par renforcement", "Vision par ordinateur", "Machine Learning"], answer: 1 },
+            { text: "Méthode qui entraîne un modèle à s'améliorer à partir de retours d'expérience, comme dans les jeux vidéo ou la robotique.", options: ["IA Générative", "Apprentissage par renforcement", "NLP"], answer: 1 },
+            { text: "Utilisé par Netflix et Amazon pour recommander des films ou produits basés sur les préférences de l’utilisateur.", options: ["Systèmes de recommandation", "IA Générative", "Machine Learning"], answer: 0 },
+            { text: "Capacité d'un programme à générer des images, du texte ou de la musique de manière autonome.", options: ["Deep Learning", "NLP", "IA Générative"], answer: 2 },
+            { text: "Technologie utilisée pour détecter les fraudes bancaires en identifiant des comportements suspects dans les transactions.", options: ["Machine Learning", "Détection d’anomalies", "Systèmes de recommandation"], answer: 1 },
+            { text: "Une voiture autonome utilise cette technologie pour analyser son environnement et prendre des décisions en temps réel.", options: ["NLP", "IA embarquée", "Deep Learning"], answer: 1 },
+            { text: "Technologie utilisée pour générer des images à partir de descriptions textuelles, comme DALL·E ou Midjourney.", options: ["Machine Learning", "Vision par ordinateur", "Modèles de transformation"], answer: 2 }
+        ];
+        
+        let score = 0;
+        function checkAnswer(questionIndex, choice) {
+            let feedback = document.getElementById("feedback" + questionIndex);
+            if (choice === questions[questionIndex].answer) {
+                feedback.textContent = "Bonne réponse";
+                feedback.style.color = "limegreen";
+                score++;
+            } else {
+                feedback.textContent = "Mauvaise réponse";
+                feedback.style.color = "red";
+            }
+            
+            let nextQuestion = document.getElementById("question" + (questionIndex + 1));
+            if (nextQuestion) {
+                nextQuestion.style.display = "block";
+                nextQuestion.scrollIntoView({ behavior: "smooth" });
+            } else {
+                displayFinalScore();
+            }
+        }
+        
+        function generateQuiz() {
+            let quizContainer = document.getElementById("quiz");
+            for (let i = 0; i < questions.length; i++) {
+                let questionDiv = document.createElement("div");
+                questionDiv.id = "question" + i;
+                questionDiv.style.display = i === 0 ? "block" : "none";
+                questionDiv.innerHTML = `<p>${i + 1}. ${questions[i].text}</p>`;
+                for (let j = 0; j < questions[i].options.length; j++) {
+                    questionDiv.innerHTML += `<button onclick='checkAnswer(${i}, ${j})'>${questions[i].options[j]}</button>`;
+                }
+                questionDiv.innerHTML += `<p class='feedback' id='feedback${i}'></p>`;
+                quizContainer.appendChild(questionDiv);
+            }
+        }
+        
+        function displayFinalScore() {
+            document.getElementById("scoreContainer").innerHTML = `Score final : ${score}/10`;
+            document.getElementById("scoreContainer").style.display = "block";
+        }
+        generateQuiz();
+    </script>
+</body>
+</html>
